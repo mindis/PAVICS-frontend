@@ -9,8 +9,17 @@ require("openlayers/css/ol.css");
 require("./OLComponent.css");
 import classes from './ol3-layerswitcher.scss'
 
-
+// tempory key for the access to the BING API
 var g_BING_API_KEY = 'AtXX65CBBfZXBxm6oMyf_5idMAMI7W6a5GuZ5acVcrYi6lCQayiiBz7_aMHB7JR7'
+
+var g_initMapParams_Earth={
+  projection: 'EPSG:4326',
+  center: [0, 0],
+  zoom: 4
+}
+
+// Not using wms
+var g_use_wms = false
 
 
 class OLComponent extends React.Component {
@@ -21,14 +30,18 @@ class OLComponent extends React.Component {
 
   constructor(props) {
     super(props);
+    // Main map objects
     this.map = null;
+    // Background maps group
     this.baseLayers = new ol.layer.Group({'title': 'Base maps', 'opacity':1.0, 'visible':true,'zIndex':0})
+    // Overlays layers group
     this.overlayLayers = new ol.layer.Group({'title': 'Overlays','opacity':1.0, 'visible':true,'zIndex':1})
+    // Basic map view
     this.view = null
+    // Temp layer for testing netCDF WMS
     this.tmpLayer=null
 
     this.popup = null;
-
   }
 
   // Returns base layers list
@@ -49,20 +62,12 @@ class OLComponent extends React.Component {
 
   // Add backgrounnd layer (use once)
   initBackgroundLayer() {
+    // Add bing wms (aerial view)
     this.addBingLayer('Aerial', this.getMapBaseLayersList(),'Aerial')
+    // Some test wms layers
     var wmsUrl = "http://demo.boundlessgeo.com/geoserver/wms";
     var wmsParams = {'LAYERS': 'topp:states', 'TILED': true};
     this.addTileWMSLayer('topp:states', this.getMapOverlayList(), wmsUrl, wmsParams);
-  }
-
-  removeLayer(layers, title){
-    var layer;
-
-    for(layer in layers)
-      if(title===layer.get('title')) {
-        console.log('addTileWMSLayer: First Remove layer ' + layer.get('title'));
-        this.map.removeLayer(layer)
-      }
   }
 
   /*! \brief Adds a layer to a layers list
@@ -80,6 +85,7 @@ class OLComponent extends React.Component {
                   serverType,
                   visible=true) {
 
+    // Get wms layer
     var layer = this.getTileWMSLayer(title,
       wmsUrl,
       wmsParams,
@@ -104,8 +110,9 @@ class OLComponent extends React.Component {
                   extent,
                   serverType="",
                   visible=true){
-
+    
     if (extent == undefined) {
+      // if no extent is defined, all the layer is loaded
         return new ol.layer.Tile(
           {
             visible:visible,
@@ -119,6 +126,7 @@ class OLComponent extends React.Component {
           });
     }
     else {
+      // return the roi layer
         return new ol.layer.Tile(
           {
             title: title,
@@ -133,6 +141,7 @@ class OLComponent extends React.Component {
     }
   }
 
+  // Adds bing map layers
   addBingLayer(title, layers, bingStyle){
     layers.push(new ol.layer.Tile({
       visible: true,
@@ -147,11 +156,14 @@ class OLComponent extends React.Component {
     }));
   }
 
-  initMap() {
+  // Init current map object
+  initMap(initMapParams=g_initMapParams_Earth) {
 
+    // Create view
     this.view = new ol.View({
-      center: [-10997148, 4569099],
-      zoom: 4
+      center:g_initMapParams_Earth['center'],
+      zoom:g_initMapParams_Earth['zoom'],
+      projection:g_initMapParams_Earth['projection']
     })
 
     var map = new ol.Map({
@@ -166,6 +178,7 @@ class OLComponent extends React.Component {
     });
     map.addControl(layerSwitcher);
 
+    // Set
     this.map = map;
   }
 
@@ -226,24 +239,25 @@ class OLComponent extends React.Component {
     //this.map = null;
   }
 
-  componentDidUpdate(prevProps, prevState){
-    if(this.props.dataset && this.props.capabilities){
-      var wmsUrl = this.props.capabilities.value["WMS_Capabilities"]["Service"][0]["OnlineResource"][0]["$"]["xlink:href"];
-      var wmsParams = {
-        'TRANSPARENT': 'TRUE',
-        'LAYERS' : this.props.dataset["Name"][0],
-        'BGCOLOR' : 'transparent',
-        'SRS' : 'PSG:4326'
-      }
-      //this.addTileWMSLayer(this.props.dataset["Name"][0],this.getMapOverlayList(), wmsUrl, wmsParams);
-      if(this.tmpLayer)
-      {
-        this.tmpLayer.setVisible(false);
-        this.map.removeLayer(this.tmpLayer);
-      }
+  componentDidUpdate(prevProps, prevState) {
+    if (g_use_wms) {
+      if (this.props.dataset && this.props.capabilities) {
+        var wmsUrl = this.props.capabilities.value["WMS_Capabilities"]["Service"][0]["OnlineResource"][0]["$"]["xlink:href"];
+        var wmsParams = {
+          'TRANSPARENT': 'TRUE',
+          'LAYERS': this.props.dataset["Name"][0],
+          'BGCOLOR': 'transparent',
+          'SRS': 'PSG:4326'
+        }
+        //this.addTileWMSLayer(this.props.dataset["Name"][0],this.getMapOverlayList(), wmsUrl, wmsParams);
+        if (this.tmpLayer) {
+          this.tmpLayer.setVisible(false);
+          this.map.removeLayer(this.tmpLayer);
+        }
 
-      this.tmpLayer = this.addTileWMSLayer("ncWMS2 test",this.getMapOverlayList(), wmsUrl, wmsParams);
-    }else{
+        this.tmpLayer = this.addTileWMSLayer("ncWMS2 test", this.getMapOverlayList(), wmsUrl, wmsParams);
+      } else {
+      }
     }
   }
 

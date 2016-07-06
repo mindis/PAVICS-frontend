@@ -16,8 +16,7 @@ export const createRoutes = (store) => ({
   childRoutes: [
     CounterRoute(store),
     OpenLayersRoute(store),
-    CesiumRoute(store),
-    WmsRoute(store)
+    CesiumRoute(store)/*, WmsRoute(store)*/
   ]
 });
 
