@@ -52,7 +52,8 @@ class OLComponent extends React.Component {
     return []
   }
 
-  // Returns overlay layers list
+  /*! \brief  Returns overlay layers list
+   */
   getMapOverlayList() {
     if (this.overlayLayers != null) {
       return this.overlayLayers.getLayers()
@@ -110,7 +111,7 @@ class OLComponent extends React.Component {
                   extent,
                   serverType="",
                   visible=true){
-    
+
     if (extent == undefined) {
       // if no extent is defined, all the layer is loaded
         return new ol.layer.Tile(
