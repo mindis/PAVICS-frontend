@@ -16,6 +16,8 @@ var NETCDF_DATA = 'http://132.217.140.31:8083/thredds/fileServer/birdhouse/CMIP5
 
 import React from 'react'
 require('jquery');
+
+
 import classes from './MapViewPanel.scss'
 import ol from 'openlayers';
 window.ol = ol; //_ol3-layerswitcher.js needs ol as global (...)
@@ -38,7 +40,8 @@ function wait(ms){
 
 var MapViewToolbar = require('../MapViewToolbar/MapViewToolbar');
 var Bootstrap = require('react-bootstrap');
-var Panel = Bootstrap.Panel
+var Panel = Bootstrap.Panel;
+
 
 var Grid = Bootstrap.Grid;
 var Row = Bootstrap.Row;
@@ -743,7 +746,8 @@ class MapViewerPanel extends React.Component {
         params: {'FORMAT': 'image/png',
           tiled: true,
           STYLES: '',
-          LAYERS: workspaceLayerName
+          LAYERS: workspaceLayerName,
+          crossOrigin: 'anonymous'
         }
       })
     });
@@ -762,7 +766,8 @@ class MapViewerPanel extends React.Component {
           TILED: true,
           STYLES: style,
           LAYERS: layerName,
-          TRANSPARENT:'TRUE'
+          TRANSPARENT:'TRUE',
+          crossOrigin: 'anonymous'
         }
       })
     });
@@ -788,7 +793,8 @@ class MapViewerPanel extends React.Component {
           COLORSCALERANGE:'0.0000004000,0.00006000',
           NUMCOLORBANDS:'10',
           LOGSCALE:false,
-          VERSION:'1.1.1'
+          VERSION:'1.1.1',
+          crossOrigin: 'anonymous'
 
         }
       })
@@ -953,11 +959,12 @@ class MapViewerPanel extends React.Component {
 
   render () {
     return(
-      <div className={classes['MapViewerPanel']}>
-        <MapViewToolbar id="map-view-toolbar-id" onMapViewToolbarClick={this._handleToolbarClick}/>
+      <Panel className={classes['MapViewerPanel']}>
+
         <div></div>
         <Panel id="map" className="map"/>
-        <form id="mouse-position-id">
+        <MapViewToolbar id="map-view-toolbar-id" onMapViewToolbarClick={this._handleToolbarClick}/>
+        <Panel id="mouse-position-id">
           <div>
             <label>Projection</label>
             <select id="projection">
@@ -965,9 +972,9 @@ class MapViewerPanel extends React.Component {
               <option value="EPSG:3857">EPSG:3857</option>
             </select>
           </div>
-        </form>
-        <div id="info"><em>Click on the map to get feature info</em></div>
-      </div>
+        </Panel>
+        <Panel id="info"><em>Click on the map to get feature info</em></Panel>
+      </Panel>
     )
   }
 }
