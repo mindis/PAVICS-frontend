@@ -955,7 +955,7 @@ class MapViewerPanel extends React.Component {
 
     me.layerSwitcher.setMap(me.map);
      me.map.addControl(me.layerSwitcher);
-  }
+  }  
 
   render () {
     return(
