@@ -28,7 +28,8 @@ const initialState = {
       isFetching: false,
       items: [],
       error: null
-    }
+    },
+    latestCrawledDataset: ''
   },
   visualize: {
     mapManipulationMode: constants.VISUALIZE_MODE_VISUALIZE,

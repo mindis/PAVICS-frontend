@@ -31,6 +31,7 @@ const infoStyle = {
 class ProcessMonitoring extends React.Component {
   static propTypes = {
     addDatasetLayersToVisualize: React.PropTypes.func.isRequired,
+    crawlDataset: React.PropTypes.func.isRequired,
     fetchWPSJobs: React.PropTypes.func.isRequired,
     monitor: React.PropTypes.object.isRequired,
     fetchVisualizableData: React.PropTypes.func.isRequired
@@ -43,6 +44,7 @@ class ProcessMonitoring extends React.Component {
       numberPerPage: constants.PER_PAGE_OPTIONS[constants.PER_PAGE_INITIAL_INDEX]
     };
     this.props.fetchWPSJobs();
+    this._onCrawlDataset = this._onCrawlDataset.bind(this);
     this._onRefreshResults = this._onRefreshResults.bind(this);
     this._onPageChanged = this._onPageChanged.bind(this);
     this._onVisualiseDataset = this._onVisualiseDataset.bind(this);
@@ -60,6 +62,11 @@ class ProcessMonitoring extends React.Component {
       pageNumber: pageNumber,
       numberPerPage: numberPerPage
     });
+  }
+
+  _onCrawlDataset (netcdfUrl) {
+    let fileName = netcdfUrl.substr(netcdfUrl.lastIndexOf('/') + 1);
+    this.props.crawlDataset(fileName);
   }
 
   _onVisualiseDataset (url) {
@@ -146,7 +153,7 @@ class ProcessMonitoring extends React.Component {
                         <MenuItem
                           primaryText="Share (TODO)"
                           disabled={x.status !== constants.JOB_SUCCESS_STATUS}
-                          onTouchTap={(event) => alert('share: launch crawler')}
+                          onTouchTap={(event) => this._onCrawlDataset(netcdfUrl)}
                           leftIcon={<ShareIcon />} />
                         <MenuItem
                           primaryText="Add to current project (TODO)"

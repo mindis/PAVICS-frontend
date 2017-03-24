@@ -48,12 +48,14 @@ const FETCH_WMS_LAYER_DETAILS_SUCCESS = 'Visualize.FETCH_WMS_LAYER_DETAILS_SUCCE
 const FETCH_WMS_LAYER_TIMESTEPS_REQUEST = 'Visualize.FETCH_WMS_LAYER_TIMESTEPS_REQUEST';
 const FETCH_WMS_LAYER_TIMESTEPS_FAILURE = 'Visualize.FETCH_WMS_LAYER_TIMESTEPS_FAILURE';
 const FETCH_WMS_LAYER_TIMESTEPS_SUCCESS = 'Visualize.FETCH_WMS_LAYER_TIMESTEPS_SUCCESS';
-const FETCH_WPS_JOBS_REQUEST = 'Visualize.FETCH_WPS_JOBS_REQUEST';
-const FETCH_WPS_JOBS_FAILURE = 'Visualize.FETCH_WPS_JOBS_FAILURE';
-const FETCH_WPS_JOBS_SUCCESS = 'Visualize.FETCH_WPS_JOBS_SUCCESS';
 const FETCH_SCALAR_VALUE_REQUEST = 'Visualize.FETCH_SCALAR_VALUE_REQUEST';
 const FETCH_SCALAR_VALUE_FAILURE = 'Visualize.FETCH_SCALAR_VALUE_FAILURE';
 const FETCH_SCALAR_VALUE_SUCCESS = 'Visualize.FETCH_SCALAR_VALUE_SUCCESS';
+
+const MONITOR_SET_CRAWLED_DATASET = 'Monitor.MONITOR_SET_CRAWLED_DATASET';
+const MONITOR_FETCH_WPS_JOBS_REQUEST = 'Monitor.MONITOR_FETCH_WPS_JOBS_REQUEST';
+const MONITOR_FETCH_WPS_JOBS_FAILURE = 'Monitor.MONITOR_FETCH_WPS_JOBS_FAILURE';
+const MONITOR_FETCH_WPS_JOBS_SUCCESS = 'Monitor.MONITOR_FETCH_WPS_JOBS_SUCCESS';
 // ------------------------------------
 // Actions
 // ------------------------------------
@@ -420,7 +422,7 @@ export function receiveWMSLayerTimesteps (data) {
 
 export function requestWPSJobs () {
   return {
-    type: FETCH_WPS_JOBS_REQUEST,
+    type: MONITOR_FETCH_WPS_JOBS_REQUEST,
     jobs: {
       requestedAt: Date.now(),
       isFetching: true,
@@ -430,7 +432,7 @@ export function requestWPSJobs () {
 }
 export function receiveWPSJobsFailure (error) {
   return {
-    type: FETCH_WPS_JOBS_FAILURE,
+    type: MONITOR_FETCH_WPS_JOBS_FAILURE,
     jobs: {
       receivedAt: Date.now(),
       isFetching: false,
@@ -441,7 +443,7 @@ export function receiveWPSJobsFailure (error) {
 }
 export function receiveWPSJobs (jobs) {
   return {
-    type: FETCH_WPS_JOBS_SUCCESS,
+    type: MONITOR_FETCH_WPS_JOBS_SUCCESS,
     jobs: {
       receivedAt: Date.now(),
       isFetching: false,
@@ -594,6 +596,12 @@ export function fetchWMSLayerTimesteps (url, layer, day) {
      console.log(error);
      dispatch(receiveWMSLayerTimestepsFailure(error));
      }); */
+  };
+}
+function setCrawledDataset (dataset) {
+  return {
+    type: MONITOR_SET_CRAWLED_DATASET,
+    latestCrawledDataset: dataset
   };
 }
 function setSelectedProcess (process) {
@@ -891,6 +899,16 @@ export function fetchProviders () {
       });
   };
 }
+export function crawlDataset (dataset) {
+  return (dispatch) => {
+    return fetch(`/wps/crawl?dataset=${dataset}`)
+      .then(response => response.json())
+      .then(json => dispatch(setCrawledDataset(dataset)))
+      .catch(err => {
+        console.log(err);
+      });
+  };
+}
 export function executeProcess (provider, process, inputValues) {
   return () => {
     console.log(inputValues);
@@ -1125,15 +1143,18 @@ const PLATFORM_HANDLERS = {
   }
 };
 const MONITOR_HANDLERS = {
-  [FETCH_WPS_JOBS_REQUEST]: (state, action) => {
+  [MONITOR_FETCH_WPS_JOBS_REQUEST]: (state, action) => {
     return ({...state, jobs: action.jobs});
   },
-  [FETCH_WPS_JOBS_FAILURE]: (state, action) => {
+  [MONITOR_FETCH_WPS_JOBS_FAILURE]: (state, action) => {
     return ({...state, jobs: action.jobs});
   },
-  [FETCH_WPS_JOBS_SUCCESS]: (state, action) => {
+  [MONITOR_FETCH_WPS_JOBS_SUCCESS]: (state, action) => {
     return ({...state, jobs: action.jobs});
   },
+  [MONITOR_SET_CRAWLED_DATASET]: (state, action) => {
+    return {...state, latestCrawledDataset: action.latestCrawledDataset};
+  }
 };
 function workflowWizardReducer (state, action) {
   const handler = WORKFLOW_WIZARD_HANDLERS[action.type];

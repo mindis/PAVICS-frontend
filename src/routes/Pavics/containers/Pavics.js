@@ -43,6 +43,7 @@ class Pavics extends React.Component {
         return (
           <ProcessMonitoring
             addDatasetLayersToVisualize={this.props.addDatasetLayersToVisualize}
+            crawlDataset={this.props.crawlDataset}
             fetchWPSJobs={this.props.fetchWPSJobs}
             monitor={this.props.monitor}
             fetchVisualizableData={this.props.fetchVisualizableData} />
