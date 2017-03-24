@@ -1,6 +1,7 @@
 import config from '../../../config';
 import request from 'koa-request';
 import Utils from './../../Utils';
+
 var consumer = (function () {
   // this creates the string for whatever comes after DataInputs=
   // which is stranglely formed, that is, separated by semicolons, colons and commas
@@ -68,14 +69,27 @@ var consumer = (function () {
           this.body = response.body;
           break;
         case 'crawl':
-          let dataset = this.request.query['dateset_id'];
-          url = `${config.pavics_pywps_path}?service=WPS&request=execute&version=1.0.0&identifier=pavicrawler&storeExecuteResponse=true&DataInputs=targetfiles=${dataset}`;
-          console.log('crawling a file:', url);
-          response = yield request(url);
-          xml = yield Utils.parseXMLThunk(response.body);
-          // let jsonPath = Utils.extractWPSOutputPath(xml);
-          // response = yield request(jsonPath);
-          this.body = xml;
+          let dataset = this.request.query['dataset_id'];
+          url = `${config.pavics_pywps_path}?service=WPS&request=execute&version=1.0.0&identifier=pavicrawler&status=true&storeExecuteResponse=true&DataInputs=target_files=${dataset}`;
+          console.log('Crawling a file: ', url);
+          response = yield request({url: url});
+          let json = yield Utils.parseXMLThunk(response.body);
+          console.log('Response1 Body: ');
+          console.log(json);
+          let statusLocation = json['wps:ExecuteResponse']['$']['statusLocation'];
+          console.log('Consuming status: ', statusLocation);
+          // WTF THIS SHOULD WORK ...
+          // let response2 = yield request({url: 'http://hirondelle.crim.ca:8086/wps_results/42cba20e-109d-11e7-baf0-0242ac120003.xml'});
+          let response2 = yield request({url: statusLocation});
+          console.log('Response2 Body: ');
+          console.log(response2.body);
+          let json2 = yield Utils.parseXMLThunk(response2.body);
+          console.log('JSON Status: ');
+          console.log(json2);
+          let outputPath = Utils.extractWPSOutputPath(json2);
+          console.log('Consuming output path: ', outputPath);
+          let response3 = yield request({url: outputPath});
+          this.body = response3.body;
       }
     }
   };

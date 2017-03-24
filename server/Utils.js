@@ -24,7 +24,9 @@ var Utils = (function () {
     },
     extractWPSOutputPath: function (result) {
       let outputPath = '';
-      if (result['wps:ExecuteResponse']['wps:Status'][0]['wps:ProcessSucceeded'].length) {
+      let success = result['wps:ExecuteResponse']['wps:Status'][0]['wps:ProcessSucceeded'];
+      let accepted = result['wps:ExecuteResponse']['wps:Status'][0]['wps:ProcessAccepted'];
+      if ((success && success.length) || (accepted && accepted.length)) {
         let outputs = result['wps:ExecuteResponse']['wps:ProcessOutputs'][0]['wps:Output'];
         outputs.forEach(function (output) {
           // hardcoding because pywps seems to return different things
@@ -37,10 +39,11 @@ var Utils = (function () {
           // otherwise, just return an array of outputs with their identifier
           console.log('identifier:', output['ows:Identifier'][0]);
           if (
-            output['ows:Identifier'][0] === 'output' ||
+            output['ows:Identifier'][0] === 'output' ||//
             output['ows:Identifier'][0] === 'search_result' ||
             output['ows:Identifier'][0] === 'plotly_result' ||
-            output['ows:Identifier'][0] === 'point_result'
+            output['ows:Identifier'][0] === 'point_result' ||
+            output['ows:Identifier'][0] === 'crawler_result'
           ) {
             outputPath = output['wps:Reference'][0].$.href || output['wps:Reference'][0].$['xlink:href'];
           }
